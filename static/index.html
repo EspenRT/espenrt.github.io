@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KryptoRadar</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0f1219;
+            color: #c9d1d9;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: #161b26;
+            border-bottom: 1px solid #21262d;
+            padding: 16px 32px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .header h1 { font-size: 18px; font-weight: 600; color: #e6edf3; }
+        .header h1 span { color: #7c6bf5; }
+
+        .header-right {
+            display: flex; align-items: center; gap: 16px;
+            font-size: 12px; color: #8b949e;
+        }
+        .status-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            display: inline-block; margin-right: 5px;
+        }
+        .status-live    { background: #3fb950; }
+        .status-loading { background: #d29922; }
+        .status-error   { background: #f85149; }
+
+        /* Legend */
+        .legend {
+            padding: 10px 32px;
+            display: flex; align-items: center; gap: 24px;
+            font-size: 12px; color: #8b949e;
+            border-bottom: 1px solid #21262d;
+            background: #131920;
+        }
+        .legend-title { font-weight: 600; color: #c9d1d9; }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .legend-badge {
+            display: inline-block; padding: 2px 8px;
+            border-radius: 4px; font-size: 10px; font-weight: 700;
+        }
+        .badge-today     { background: #238636; color: #fff; }
+        .badge-yesterday { background: #9e6a03; color: #fff; }
+        .badge-older     { background: #484f58; color: #d4a72c; }
+
+        /* Table */
+        .container { padding: 24px 32px; }
+
+        table {
+            width: 100%; border-collapse: separate; border-spacing: 0;
+            background: #161b26; border: 1px solid #21262d;
+            border-radius: 10px; overflow: hidden;
+        }
+
+        /* Grouped column headers */
+        thead th {
+            background: #1c2333; padding: 10px 16px; text-align: left;
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.6px; color: #8b949e;
+            border-bottom: 1px solid #21262d;
+        }
+
+        thead .group-header {
+            text-align: center;
+            font-size: 10px;
+            letter-spacing: 1px;
+            color: #6e7681;
+            border-bottom: 1px solid #30363d;
+            padding: 8px 16px;
+        }
+        thead .group-daily  { border-right: 1px solid #30363d; }
+        thead .group-weekly { }
+
+        /* Vertical divider between daily / weekly groups */
+        .col-divider {
+            border-left: 1px solid #30363d;
+        }
+
+        /* Row number column */
+        .row-num {
+            color: #484f58; font-size: 11px; font-weight: 600;
+            text-align: center; width: 36px; min-width: 36px;
+            padding-left: 10px !important; padding-right: 4px !important;
+        }
+
+        /* Filter row */
+        thead tr.filter-row th {
+            padding: 6px 8px;
+            background: #181e2a;
+            border-bottom: 2px solid #30363d;
+        }
+        .filter-select, .filter-input {
+            width: 100%;
+            background: #0d1117;
+            color: #c9d1d9;
+            border: 1px solid #30363d;
+            border-radius: 4px;
+            padding: 4px 6px;
+            font-size: 11px;
+            font-family: inherit;
+            outline: none;
+        }
+        .filter-select:focus, .filter-input:focus {
+            border-color: #7c6bf5;
+        }
+        .filter-input::placeholder { color: #484f58; }
+
+        tbody tr { transition: background 0.15s; }
+        tbody tr:hover { background: #1c2333; }
+        tbody td {
+            padding: 14px 16px; border-bottom: 1px solid #21262d;
+            vertical-align: middle; font-size: 13px;
+        }
+        tbody tr:last-child td { border-bottom: none; }
+
+        /* Asset */
+        .asset-name { font-weight: 700; font-size: 15px; color: #e6edf3; }
+        .asset-price { font-size: 12px; color: #8b949e; margin-top: 2px; font-variant-numeric: tabular-nums; }
+
+        /* Signal cell */
+        .signal-cell { display: flex; align-items: center; gap: 8px; }
+
+        .signal-badge {
+            display: inline-block; padding: 5px 12px; border-radius: 5px;
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.3px; white-space: nowrap;
+        }
+        .sig-buy        { background: rgba(63,185,80,0.15); color: #3fb950; border: 1px solid rgba(63,185,80,0.25); }
+        .sig-strong-buy { background: rgba(210,153,34,0.15); color: #d29922; border: 1px solid rgba(210,153,34,0.3); }
+        .sig-sell        { background: rgba(248,81,73,0.15); color: #f85149; border: 1px solid rgba(248,81,73,0.25); }
+        .sig-sell-div    { background: rgba(248,81,73,0.10); color: #f8877f; border: 1px solid rgba(248,81,73,0.15); }
+        .sig-buy-div     { background: rgba(63,185,80,0.10); color: #7ee787; border: 1px solid rgba(63,185,80,0.15); }
+        .sig-none { color: #484f58; font-size: 12px; font-style: italic; }
+
+        /* Date badge */
+        .date-badge {
+            display: inline-block; padding: 3px 9px; border-radius: 4px;
+            font-size: 10px; font-weight: 700; white-space: nowrap;
+        }
+        .date-today     { background: #238636; color: #fff; }
+        .date-yesterday { background: #9e6a03; color: #fff; }
+        .date-older     { background: #484f58; color: #d4a72c; }
+
+        /* MFI */
+        .mfi-badge {
+            display: inline-block; padding: 4px 10px; border-radius: 5px;
+            font-size: 12px; font-weight: 700; white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+        .mfi-bullish { background: rgba(63,185,80,0.15); color: #3fb950; border: 1px solid rgba(63,185,80,0.25); }
+        .mfi-bearish { background: rgba(248,81,73,0.15); color: #f85149; border: 1px solid rgba(248,81,73,0.25); }
+
+        /* Score */
+        .score-cell { text-align: center; }
+        .score-badge {
+            display: inline-block; padding: 6px 14px; border-radius: 6px;
+            font-size: 16px; font-weight: 800; min-width: 52px;
+            text-align: center; letter-spacing: 0.5px;
+        }
+        .score-high   { background: rgba(35,134,54,0.25); color: #3fb950; border: 1px solid rgba(35,134,54,0.4); }
+        .score-good   { background: rgba(46,160,67,0.20); color: #56d364; border: 1px solid rgba(46,160,67,0.3); }
+        .score-mid    { background: rgba(158,106,3,0.20); color: #d29922; border: 1px solid rgba(158,106,3,0.3); }
+        .score-low    { background: rgba(189,86,29,0.20); color: #db6d28; border: 1px solid rgba(189,86,29,0.3); }
+        .score-zero   { background: rgba(218,54,51,0.15); color: #f85149; border: 1px solid rgba(218,54,51,0.25); }
+
+        /* Loading */
+        .loading { text-align: center; padding: 80px 20px; color: #484f58; }
+        .spinner {
+            width: 32px; height: 32px;
+            border: 3px solid #21262d; border-top-color: #7c6bf5;
+            border-radius: 50%; animation: spin 0.8s linear infinite;
+            margin: 0 auto 14px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .error-row td { color: #f85149; }
+
+        /* Hidden rows from filter */
+        tr.hidden { display: none; }
+
+        /* Filter active indicator */
+        .filter-active { border-color: #7c6bf5 !important; background: #131720 !important; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><span>Krypto</span>Radar</h1>
+        <div class="header-right">
+            <span><span class="status-dot status-loading" id="status-dot"></span><span id="status-text">Loading...</span></span>
+            <span id="last-update"></span>
+        </div>
+    </div>
+
+    <div class="legend">
+        <span class="legend-title">Signal Date:</span>
+        <div class="legend-item"><span class="legend-badge badge-today">TODAY</span> Signal fired today</div>
+        <div class="legend-item"><span class="legend-badge badge-yesterday">YESTERDAY</span> Signal fired yesterday</div>
+        <div class="legend-item"><span class="legend-badge badge-older">OLDER</span> Signal fired days ago</div>
+    </div>
+
+    <div class="container">
+        <div id="content">
+            <div class="loading"><div class="spinner"></div>Fetching signals from Binance...</div>
+        </div>
+    </div>
+
+    <script>
+    const REFRESH = 60000;
+    let _lastData = null;  // Store last data for re-filtering
+
+    function todayUTC() {
+        const d = new Date();
+        return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+    }
+    function parseDateUTC(s) {
+        if (!s) return null;
+        // Binance timestamps are UTC — append 'Z' so JS Date parses as UTC, not local time
+        const utcStr = s.endsWith('Z') || s.includes('+') ? s : s + 'Z';
+        const d = new Date(utcStr);
+        return isNaN(d) ? null : new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+    }
+    function dateBadge(dateStr) {
+        const d = parseDateUTC(dateStr);
+        if (!d) return '';
+        const diff = Math.floor((todayUTC() - d) / 86400000);
+        if (diff <= 0) return '<span class="date-badge date-today">TODAY</span>';
+        if (diff === 1) return '<span class="date-badge date-yesterday">YESTERDAY</span>';
+        const lbl = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+        return `<span class="date-badge date-older">${lbl}</span>`;
+    }
+
+    function sigClass(type) {
+        if (!type) return '';
+        const t = type.toUpperCase();
+        if (t === 'STRONG BUY') return 'sig-strong-buy';
+        if (t === 'BUY') return 'sig-buy';
+        if (t.includes('BUY')) return 'sig-buy-div';
+        if (t === 'SELL') return 'sig-sell';
+        if (t.includes('SELL')) return 'sig-sell-div';
+        return '';
+    }
+
+    function renderSignal(sig) {
+        if (!sig || !sig.latest_signal) return '<span class="sig-none">No signal</span>';
+        const s = sig.latest_signal;
+        return `<div class="signal-cell">
+            <span class="signal-badge ${sigClass(s.type)}">${s.type}</span>
+            ${dateBadge(s.date)}
+        </div>`;
+    }
+
+    function renderBtcCell(tfData) {
+        if (!tfData) return '<span class="sig-none">--</span>';
+        const btc = tfData.btc_pair;
+        if (!btc) return '<span class="sig-none">N/A</span>';
+        if (btc.error) return '<span class="sig-none">Unavailable</span>';
+        return renderSignal(btc);
+    }
+
+    function fmtPrice(p) {
+        if (!p) return '--';
+        if (p >= 1) return p.toLocaleString('en-US', { maximumFractionDigits: 2 });
+        if (p >= 0.01) return p.toFixed(4);
+        return p.toFixed(6);
+    }
+
+    function renderMfi(usdt) {
+        if (!usdt || usdt.mfi == null) return '<span class="sig-none">--</span>';
+        const v = usdt.mfi;
+        const cls = v >= 0 ? 'mfi-bullish' : 'mfi-bearish';
+        const label = v >= 0 ? 'BULLISH' : 'BEARISH';
+        return `<span class="mfi-badge ${cls}">${label}</span>`;
+    }
+
+    function scoreClass(s) {
+        if (s >= 80) return 'score-high';
+        if (s >= 60) return 'score-good';
+        if (s >= 40) return 'score-mid';
+        if (s >= 20) return 'score-low';
+        return 'score-zero';
+    }
+
+    function renderScore(score) {
+        if (score == null) return '<span class="sig-none">--</span>';
+        return `<span class="score-badge ${scoreClass(score)}">${score}%</span>`;
+    }
+
+    // --- Filtering helpers ---
+    function getSignalRecency(dateStr) {
+        const d = parseDateUTC(dateStr);
+        if (!d) return '';
+        const diff = Math.floor((todayUTC() - d) / 86400000);
+        if (diff <= 0) return 'TODAY';
+        if (diff === 1) return 'YESTERDAY';
+        return 'OLDER';
+    }
+    function getSignalFilterKey(pairData) {
+        if (!pairData || !pairData.latest_signal) return '';
+        const type = (pairData.latest_signal.type || '').toUpperCase();
+        if (type.includes('SELL')) return 'SELL';
+        // It's a buy variant — combine with recency
+        const recency = getSignalRecency(pairData.latest_signal.date);
+        return recency ? 'BUY_' + recency : 'BUY_OLDER';
+    }
+    function getBtcSignalFilterKey(tfData) {
+        if (!tfData || !tfData.btc_pair || tfData.btc_pair.error) return '';
+        if (!tfData.btc_pair.latest_signal) return '';
+        const type = (tfData.btc_pair.latest_signal.type || '').toUpperCase();
+        if (type.includes('SELL')) return 'SELL';
+        const recency = getSignalRecency(tfData.btc_pair.latest_signal.date);
+        return recency ? 'BUY_' + recency : 'BUY_OLDER';
+    }
+    function getMfiLabel(usdt) {
+        if (!usdt || usdt.mfi == null) return '';
+        return usdt.mfi >= 0 ? 'BULLISH' : 'BEARISH';
+    }
+    function getScoreBucket(score) {
+        if (score == null) return '';
+        if (score >= 80) return '80-100';
+        if (score >= 60) return '60-79';
+        if (score >= 40) return '40-59';
+        if (score >= 20) return '20-39';
+        return '0-19';
+    }
+
+    function applyFilters() {
+        const assetVal  = (document.getElementById('f-asset')?.value || '').toUpperCase();
+        const scoreVal  = document.getElementById('f-score')?.value || '';
+        const d1SigVal  = document.getElementById('f-d1sig')?.value || '';
+        const d1BtcVal  = document.getElementById('f-d1btc')?.value || '';
+        const d1MfiVal  = document.getElementById('f-d1mfi')?.value || '';
+        const w1SigVal  = document.getElementById('f-w1sig')?.value || '';
+        const w1BtcVal  = document.getElementById('f-w1btc')?.value || '';
+
+        // Highlight active filters
+        document.querySelectorAll('.filter-select, .filter-input').forEach(el => {
+            el.classList.toggle('filter-active', el.value !== '');
+        });
+
+        const rows = document.querySelectorAll('#signal-tbody tr');
+        let visibleNum = 0;
+        rows.forEach(row => {
+            if (row.classList.contains('error-row')) { row.classList.remove('hidden'); return; }
+
+            const d = JSON.parse(row.dataset.filter || '{}');
+            let show = true;
+
+            if (assetVal && !d.symbol.toUpperCase().includes(assetVal)) show = false;
+            if (scoreVal && d.scoreBucket !== scoreVal) show = false;
+            if (d1SigVal && d.d1Sig !== d1SigVal) show = false;
+            if (d1BtcVal && d.d1Btc !== d1BtcVal) show = false;
+            if (d1MfiVal && d.d1Mfi !== d1MfiVal) show = false;
+            if (w1SigVal && d.w1Sig !== w1SigVal) show = false;
+            if (w1BtcVal && d.w1Btc !== w1BtcVal) show = false;
+
+            row.classList.toggle('hidden', !show);
+            if (show) {
+                visibleNum++;
+                const numCell = row.querySelector('.row-num');
+                if (numCell) numCell.textContent = visibleNum;
+            }
+        });
+    }
+
+    function makeSignalOptions() {
+        return `<option value="">All</option>
+                <option value="BUY_TODAY">Buy Today</option>
+                <option value="BUY_YESTERDAY">Buy Yesterday</option>
+                <option value="BUY_OLDER">Buy Older</option>
+                <option value="SELL">Sell</option>`;
+    }
+
+    function renderTable(data) {
+        let pairs = data.pairs || [];
+        if (!pairs.length) return '<div class="loading">No pairs configured. Edit config.json.</div>';
+
+        // Sort by score descending (best buy opportunities at top)
+        pairs = [...pairs].sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
+
+        const rows = pairs.map((p, idx) => {
+            if (p.error && !p.daily)
+                return `<tr class="error-row"><td class="row-num">${idx+1}</td><td>${p.symbol}</td><td colspan="7">${p.error}</td></tr>`;
+
+            const daily  = p.daily  || {};
+            const weekly = p.weekly || {};
+            const price  = fmtPrice(p.price);
+
+            const dUsdt = daily.usdt_pair  || {};
+            const wUsdt = weekly.usdt_pair || {};
+
+            // Store filter-relevant data on the row for fast filtering
+            const filterData = JSON.stringify({
+                symbol: p.symbol,
+                scoreBucket: getScoreBucket(p.score),
+                d1Sig: getSignalFilterKey(dUsdt),
+                d1Btc: getBtcSignalFilterKey(daily),
+                d1Mfi: getMfiLabel(dUsdt),
+                w1Sig: getSignalFilterKey(wUsdt),
+                w1Btc: getBtcSignalFilterKey(weekly),
+            });
+
+            return `<tr data-filter='${filterData.replace(/'/g, "&#39;")}'>
+                <td class="row-num">${idx+1}</td>
+                <td>
+                    <div class="asset-name">${p.symbol}</div>
+                    <div class="asset-price">$${price}</div>
+                </td>
+                <td class="score-cell">${renderScore(p.score)}</td>
+                <td>${renderSignal(dUsdt)}</td>
+                <td>${renderBtcCell(daily)}</td>
+                <td>${renderMfi(dUsdt)}</td>
+                <td class="col-divider">${renderSignal(wUsdt)}</td>
+                <td>${renderBtcCell(weekly)}</td>
+            </tr>`;
+        }).join('');
+
+        return `<table>
+            <thead>
+                <tr>
+                    <th rowspan="2" style="width:36px; text-align:center; vertical-align:bottom">#</th>
+                    <th rowspan="2" style="width:140px; vertical-align:bottom">Asset</th>
+                    <th rowspan="2" style="vertical-align:bottom; text-align:center">Score</th>
+                    <th colspan="3" class="group-header group-daily">DAILY</th>
+                    <th colspan="2" class="group-header group-weekly">WEEKLY</th>
+                </tr>
+                <tr>
+                    <th>1D Signal</th>
+                    <th>1D BTC Pair</th>
+                    <th>1D MFI</th>
+                    <th class="col-divider">1W Signal</th>
+                    <th>1W BTC Pair</th>
+                </tr>
+                <tr class="filter-row">
+                    <th></th>
+                    <th><input type="text" id="f-asset" class="filter-input" placeholder="Search..." oninput="applyFilters()"></th>
+                    <th>
+                        <select id="f-score" class="filter-select" onchange="applyFilters()">
+                            <option value="">All</option>
+                            <option value="80-100">80-100%</option>
+                            <option value="60-79">60-79%</option>
+                            <option value="40-59">40-59%</option>
+                            <option value="20-39">20-39%</option>
+                            <option value="0-19">0-19%</option>
+                        </select>
+                    </th>
+                    <th><select id="f-d1sig" class="filter-select" onchange="applyFilters()">${makeSignalOptions()}</select></th>
+                    <th><select id="f-d1btc" class="filter-select" onchange="applyFilters()">${makeSignalOptions()}</select></th>
+                    <th>
+                        <select id="f-d1mfi" class="filter-select" onchange="applyFilters()">
+                            <option value="">All</option>
+                            <option value="BULLISH">Bullish</option>
+                            <option value="BEARISH">Bearish</option>
+                        </select>
+                    </th>
+                    <th class="col-divider"><select id="f-w1sig" class="filter-select" onchange="applyFilters()">${makeSignalOptions()}</select></th>
+                    <th><select id="f-w1btc" class="filter-select" onchange="applyFilters()">${makeSignalOptions()}</select></th>
+                </tr>
+            </thead>
+            <tbody id="signal-tbody">${rows}</tbody>
+        </table>`;
+    }
+
+    async function fetchSignals() {
+        const dot = document.getElementById('status-dot');
+        const txt = document.getElementById('status-text');
+
+        // Save current filter state before re-render
+        const savedFilters = {};
+        ['f-asset','f-score','f-d1sig','f-d1btc','f-d1mfi','f-w1sig','f-w1btc'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) savedFilters[id] = el.value;
+        });
+
+        try {
+            dot.className = 'status-dot status-loading';
+            txt.textContent = 'Refreshing...';
+            const resp = await fetch('/api/signals');
+            const data = await resp.json();
+            _lastData = data;
+            document.getElementById('content').innerHTML = renderTable(data);
+
+            // Restore filter state after re-render
+            Object.entries(savedFilters).forEach(([id, val]) => {
+                const el = document.getElementById(id);
+                if (el) el.value = val;
+            });
+
+            // Re-apply filters if any were active
+            if (Object.values(savedFilters).some(v => v)) applyFilters();
+
+            dot.className = 'status-dot status-live';
+            txt.textContent = 'Live';
+            document.getElementById('last-update').textContent = 'Updated ' + new Date().toLocaleTimeString();
+        } catch (e) {
+            dot.className = 'status-dot status-error';
+            txt.textContent = 'Error';
+        }
+    }
+
+    fetchSignals();
+    setInterval(fetchSignals, REFRESH);
+    </script>
+</body>
+</html>

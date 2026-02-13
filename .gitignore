@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+.tmp/
+.env
+.claude/
+nul
+credentials.json
+token.json
+vumanchu pinescript.txt
