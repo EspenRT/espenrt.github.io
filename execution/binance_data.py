@@ -16,7 +16,7 @@ _cache: dict[str, tuple[float, pd.DataFrame]] = {}
 CACHE_TTL = 300  # 5 minutes - daily/weekly candles don't change fast
 
 
-BINANCE_KLINES_URL = 'https://api.binance.com/api/v3/klines'
+BINANCE_KLINES_URL = 'https://data-api.binance.vision/api/v3/klines'
 
 TIMEFRAME_MAP = {
     '1m': '1m', '5m': '5m', '15m': '15m', '30m': '30m',
