@@ -1,9 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nb">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KryptoRadar</title>
+    <title>Kryptoradar.no – Kjøpssignaler & Breakout i Krypto | Tokens på vei opp Norge</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Oppdag krypto-tokens på vei opp – real-time oversikt over breakout, kjøpssignaler og momentum over de fleste kryptovaluta. Finn de beste kryptoene å kjøpe nå med kontinuerlige oppdaterte lister og tekniske signaler. Gratis verktøy for norske tradere og investorer!">
+    <meta name="keywords" content="krypto signaler, kryptovaluta kjøpssignal, crypto breakout, bitcoin signal, beste krypto å kjøpe, krypto Norge, trading signaler, teknisk analyse krypto, krypto radar, altcoin signaler, tokens på vei opp">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://kryptoradar.no/">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="KryptoRadar – Sanntids kjøpssignaler og breakout-varsler for krypto">
+    <meta property="og:description" content="Oppdag krypto-tokens på vei opp – real-time oversikt over breakout, kjøpssignaler og momentum over de fleste kryptovaluta. Gratis verktøy for norske tradere og investorer!">
+    <meta property="og:url" content="https://kryptoradar.no/">
+    <meta property="og:locale" content="nb_NO">
+    <meta property="og:site_name" content="KryptoRadar">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="KryptoRadar – Kjøpssignaler & Breakout i Krypto">
+    <meta name="twitter:description" content="Real-time breakout-varsler og kjøpssignaler for kryptovaluta. Gratis for norske tradere.">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "KryptoRadar",
+        "url": "https://kryptoradar.no/",
+        "description": "Real-time kjøpssignaler og breakout-varsler for kryptovaluta. Gratis verktøy for norske tradere og investorer.",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "Web",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "NOK"
+        },
+        "inLanguage": "nb"
+    }
+    </script>
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -22,6 +61,8 @@
         }
         .header h1 { font-size: 18px; font-weight: 600; color: #e6edf3; }
         .header h1 span { color: #7c6bf5; }
+        .header-left { display: flex; flex-direction: column; gap: 4px; }
+        .tagline { font-size: 12px; color: #8b949e; font-weight: 400; }
 
         .header-right {
             display: flex; align-items: center; gap: 16px;
@@ -192,13 +233,16 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1><span>Krypto</span>Radar</h1>
+    <header class="header">
+        <div class="header-left">
+            <h1><span>Krypto</span>Radar</h1>
+            <p class="tagline">Oversikt over krypto-tokens på vei opp</p>
+        </div>
         <div class="header-right">
             <span><span class="status-dot status-loading" id="status-dot"></span><span id="status-text">Loading...</span></span>
             <span id="last-update"></span>
         </div>
-    </div>
+    </header>
 
     <div class="legend">
         <span class="legend-title">Signal Date:</span>
