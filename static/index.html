@@ -349,7 +349,7 @@
 
     function renderScore(score) {
         if (score == null) return '<span class="sig-none">--</span>';
-        return `<span class="score-badge ${scoreClass(score)}">${score}%</span>`;
+        return `<span class="score-badge ${scoreClass(score)}">${score}</span>`;
     }
 
     // --- Filtering helpers ---
@@ -503,11 +503,11 @@
                     <th>
                         <select id="f-score" class="filter-select" onchange="applyFilters()">
                             <option value="">All</option>
-                            <option value="80-100">80-100%</option>
-                            <option value="60-79">60-79%</option>
-                            <option value="40-59">40-59%</option>
-                            <option value="20-39">20-39%</option>
-                            <option value="0-19">0-19%</option>
+                            <option value="80-100">80-100</option>
+                            <option value="60-79">60-79</option>
+                            <option value="40-59">40-59</option>
+                            <option value="20-39">20-39</option>
+                            <option value="0-19">0-19</option>
                         </select>
                     </th>
                     <th><select id="f-d1sig" class="filter-select" onchange="applyFilters()">${makeSignalOptions()}</select></th>
